@@ -4,6 +4,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cmath>
+#include "easylogging++.h"
 
 using namespace std;
 
@@ -359,19 +360,20 @@ void debugger::debug_output(const string& rivi, Action level, Logfile type){
 		if (level == Action::START) {
 			debug_level[type]++;
 		}
+		//FILE *fil = fopen(type2file(type).c_str(), "at");
+		std::string spacing = "";
+        for(int a=0;a<debug_level[type];a++) spacing += "  ";
 
-		FILE *fil = fopen(type2file(type).c_str(), "at");
+        const char* prefix = "";
+        if (level == Action::START) prefix = "Starting ";
+        else if (level == Action::END) prefix = "Finished ";
+        else if (level == Action::FAIL_AND_END) prefix = "ERROR ";
 
-		if(fil){
-			for(int a=0;a<debug_level[type];a++)fprintf(fil, "  ");
-			if (level == Action::START)fprintf(fil, "Starting ");
-			if (level == Action::END)fprintf(fil, "Finished ");
-			if (level == Action::FAIL_AND_END)fprintf(fil, "ERROR ");
-			fprintf(fil, "%s\n", rivi.c_str());
-			fclose(fil);
-		}
 		if ((level == Action::END) || (level == Action::FAIL_AND_END)){
 			debug_level[type]--;
+			LOG(ERROR) << spacing << prefix << rivi;
+		} else {
+			LOG(DEBUG) << spacing << prefix << rivi;
 		}
 	}
 }
