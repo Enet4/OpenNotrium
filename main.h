@@ -237,7 +237,6 @@ protected:
 	std::vector <journal_record> journal_records;
 	bool record_message(int type, int parameter0);
 
-
 	//player
 	bool in_shade;
 	//bool near_fire;
@@ -271,8 +270,6 @@ protected:
 	int player_controlled_creature;
 	bool can_drop_items;
 	bool show_radar;
-
-
 
 	//input
 	int override_player_controls;
