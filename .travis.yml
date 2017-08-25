@@ -6,10 +6,6 @@ addons:
     packages:
       - cmake-data
       - cmake
-      - libsdl2-dev
-      - libsdl2-mixer-dev 
-      - libsdl2-image-dev
-      - libphysfs-dev
 matrix:
   include:
     - os: linux
@@ -53,6 +49,8 @@ matrix:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
 before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev libphysfs-dev
     - eval "${MATRIX_EVAL}"
 
 script:
