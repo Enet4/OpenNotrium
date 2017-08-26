@@ -3,7 +3,7 @@
 #include "credits.h"
 
 #include <iostream>
-#include <easylogging++.h>
+#include "easylogging++.h"
 
 INITIALIZE_EASYLOGGINGPP
 

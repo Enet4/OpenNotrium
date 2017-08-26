@@ -369,9 +369,11 @@ void debugger::debug_output(const string& rivi, Action level, Logfile type){
 
 		if ((level == Action::END) || (level == Action::FAIL_AND_END)){
 			debug_level[type]--;
-			LOG(ERROR) << spacing << prefix << rivi;
-		} else {
-			LOG(DEBUG) << spacing << prefix << rivi;
+			if (level == Action::FAIL_AND_END) {
+				LOG(ERROR) << spacing << prefix << rivi;
+			} else {
+				LOG(DEBUG) << spacing << prefix << rivi;
+			}
 		}
 	}
 }
