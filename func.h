@@ -113,9 +113,9 @@ struct EnumClassHash {
 
 class debugger
 {
-    protected:
+    private:
 		std::unordered_map<Debugger::Logfile, int, EnumClassHash> debug_level;
-		std::string type2file(Debugger::Logfile type);
+		const char* type2file(Debugger::Logfile type);
     public:
 		std::unordered_map<Debugger::Logfile, bool, EnumClassHash> debug_state;
 		void debug_output(const std::string& rivi, Debugger::Action level, Debugger::Logfile type);

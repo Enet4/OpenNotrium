@@ -33,7 +33,7 @@
 #ifdef _DEBUG
 
 	#include "memleaks.h"
-	#define _CRTDBG_MAP_ALLOC
+	#define _CRTDBG_MAP_ALLOC 
 	#include <stdlib.h>
 	#include <crtdbg.h>
 	#define new DEBUG_NEW
@@ -234,7 +234,6 @@ protected:
 	std::vector <journal_record> journal_records;
 	bool record_message(int type, int parameter0);
 
-
 	//player
 	bool in_shade;
 	//bool near_fire;
@@ -268,8 +267,6 @@ protected:
 	int player_controlled_creature;
 	bool can_drop_items;
 	bool show_radar;
-
-
 
 	//input
 	int override_player_controls;

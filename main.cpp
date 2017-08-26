@@ -3,6 +3,9 @@
 #include "credits.h"
 
 #include <iostream>
+#include <easylogging++.h>
+
+INITIALIZE_EASYLOGGINGPP
 
 // In C++11, isnan is a function, not a macro.
 // If your compiler fails to find std::isnan, try
@@ -558,6 +561,7 @@ bool game_engine::cfg_load(void){
 //INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 int main(int argc, char* argv[])
 {
+	START_EASYLOGGINGPP(argc, argv);
 
 	#ifdef _DEBUG
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG | _CRTDBG_MODE_FILE);
@@ -565,7 +569,6 @@ int main(int argc, char* argv[])
 	_CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	#endif
 
-	//grim = Grim::Interface_Get("grim.dll");
 	grim = new Engine();
 
 	engine=new game_engine();
@@ -574,12 +577,20 @@ int main(int argc, char* argv[])
 	grim->System_SetState_FocusLostFunc(focuslost);
 	grim->System_SetState_FocusGainFunc(focusgained);
 
+	// load game configuration
 	if (!engine->cfg_load()) {
         std::cerr << "Config file not found." << std::endl;
         delete engine;
         delete grim;
         return -1;
 	}
+	
+	// load logging configuration
+	el::Configurations conf;
+	conf.setToDefault();
+    // reconfigure all loggers
+    el::Loggers::reconfigureAllLoggers(conf);
+
 	if(engine->windowed==0) {
         grim->System_SetState_Windowed(false);
     } else {
