@@ -218,8 +218,6 @@ void map::generate_map(float amount_multiplier, const vector<int>& terrain_types
 				int x=randInt(2,sizex-2);
 				int y=randInt(2,sizey-2);
 
-				int aaa=(int)(x)*sizey+(int)(y);
-
 				//bool aa=terrain_is_hazardous[aaa];
 
 				if(terrain_is_hazardous[(int)(x)*sizey+(int)(y)])
@@ -319,7 +317,6 @@ void map::initialize_items(void){
 			//}
 		}
 	}
-	int x,y;
 	for (unsigned int k=0; k<items.size(); k++){
 		if(items[k].dead)continue;
 		//if(grid[x].grid[y].total_objects<maximum_objects_on_grid-1){

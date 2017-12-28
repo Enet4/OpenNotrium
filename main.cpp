@@ -3317,7 +3317,6 @@ bool game_engine::creature_actions(const int creature, const bool visible){//cal
     assert (!isnan(thiscreature.x));
     assert (!isnan(thiscreature.y));
 
-	float bound_circle=14;
 	int a,b,c;
 
 		if(thiscreature.dead) return false;
@@ -6425,7 +6424,6 @@ void game_engine::draw_pop_up(void){
 		show_text_window(current_showing_entry);
 		return;
 	}
-
 
 	//draw the dot on the map
 	float dot_size=4;
@@ -12784,7 +12782,6 @@ void game_engine::handle_map_changed(void){
 
 bool game_engine::creature_will_collide(map *new_map, creature_base *creature){
 	int a,b,c;
-	float bound_circle=14;
 
 	if(creature==NULL)return false;
 
@@ -12803,12 +12800,6 @@ bool game_engine::creature_will_collide(map *new_map, creature_base *creature){
 	if(loppu_x>new_map->sizex-1)loppu_x=new_map->sizex-1;
 	if(alku_y<0)alku_y=0;
 	if(loppu_y>new_map->sizey-1)loppu_y=new_map->sizey-1;
-
-	float creature_size=(bound_circle)*(creature->size*mod.general_creatures[creature->type].size);
-	//float creature_x=creature->x+creature_size*0.5f/(bound_circle)*general_creature_size;
-	//float creature_y=creature->y+creature_size*0.5f/(bound_circle)*general_creature_size;
-
-
 
 	//collisions prevented in creature specialties
 	bool prop_prevented=false;
@@ -12852,8 +12843,6 @@ bool game_engine::creature_will_collide(map *new_map, creature_base *creature){
 
 bool game_engine::point_will_collide(map *new_map, float x, float y, bool only_ones_that_stop_bullets){
 	int a,b,c;
-	float bound_circle=14;
-
 
 	if(x<0)return true;
 	if(y<0)return true;
@@ -14311,20 +14300,17 @@ void game_engine::draw_slider(void){
 
 	bool show_cancel=true;
 	bool show_ok=false;
-	bool show_all=false;
 	bool move_by_mouse=false;
 
 	//0=give items to player
 	if(slider_type==0) {
 		show_ok=true;
-		show_all=true;
 		move_by_mouse=true;
 	}
 
 	//1=drop items to ground
 	if(slider_type==1) {
 		show_ok=true;
-		show_all=true;
 		move_by_mouse=true;
 	}
 
@@ -16470,7 +16456,6 @@ bool game_engine::creature_in_object(const creature_base *creature, const map_ob
 		float sin=sincos.table_sin(object->rotation);
 		float cos=sincos.table_cos(object->rotation);
 
-		bool collision_found=false;
 		bool c=false;
 		for(a=0;a<mod.polygons[mod.general_objects[object->type].collision_parameter0].points.size()-1;a++){
 			float xx1=mod.polygons[mod.general_objects[object->type].collision_parameter0].points[a].x*object_size*mod.general_objects[object->type].collision_parameter1;
@@ -16533,7 +16518,6 @@ bool game_engine::point_in_object(float x, float y, const map_object *object){
 		float sin=sincos.table_sin(object->rotation);
 		float cos=sincos.table_cos(object->rotation);
 
-		bool collision_found=false;
 		bool c=false;
 		for(a=0;a<mod.polygons[mod.general_objects[object->type].collision_parameter0].points.size()-1;a++){
 			float xx1=mod.polygons[mod.general_objects[object->type].collision_parameter0].points[a].x*object_size*mod.general_objects[object->type].collision_parameter1;
@@ -16724,7 +16708,6 @@ bool game_engine::creature_collision_detection(creature_base *creature, const ma
 				creature->y=creature->y2;
 				if(creature_will_collide(map_main,creature)){
 					//old place is no good either, we must find a new one
-					float jump_distance=10;
 					vector <jump_point> jump_points;
 					//find closest point on lines in polygon
 					for(unsigned int a=0;a<mod.polygons[mod.general_objects[object->type].collision_parameter0].points.size()-1;a++){
@@ -16930,7 +16913,7 @@ vector <point2d> game_engine::line_collision_detection(float x1, float y1, float
 
 //	if(mod.general_objects[object->type].collision_type==-1)return false;
     if(mod.general_objects[object->type].collision_type==-1)
-        return hits;
+		return hits;
 
 	switch(mod.general_objects[object->type].collision_type){
 
