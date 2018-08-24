@@ -4,6 +4,34 @@
 #include "func.h"
 #include <physfs.h>
 #include <memory>
+#include <iostream>
+
+using std::cerr;
+
+EngineTexture::EngineTexture(const std::string& name, GLuint opengl_id, int width, int height, bool draw_flipped, bool deleted)
+:   name(name)
+,   opengl_id(opengl_id)
+,   width(width)
+,   height(height)
+,   draw_flipped(draw_flipped)
+,   deleted(deleted)
+{}
+EngineTexture::EngineTexture(const std::string& name, GLuint opengl_id, int width, int height, bool draw_flipped)
+:   name(name)
+,   opengl_id(opengl_id)
+,   width(width)
+,   height(height)
+,   draw_flipped(draw_flipped)
+,   deleted(false)
+{}
+EngineTexture::EngineTexture(const std::string& name, GLuint opengl_id, int width, int height)
+:   name(name)
+,   opengl_id(opengl_id)
+,   width(width)
+,   height(height)
+,   draw_flipped(false)
+,   deleted(false)
+{}
 
 Engine::Engine()
 :   window(nullptr)
@@ -14,16 +42,13 @@ Engine::Engine()
 ,   clear_a(0), clear_r(0), clear_g(0), clear_b(0)
 ,   blend_src(grBLEND_SRCALPHA)
 ,   blend_dst(grBLEND_INVSRCALPHA)
+,   vertex_r{1, 1, 1, 1}
+,   vertex_g{1, 1, 1, 1}
+,   vertex_b{1, 1, 1, 1}
+,   vertex_a{1, 1, 1, 1}
 ,   freeSlotInList(false)
+,   textures()
 ,   currtexture(0) {
-
-    //perhaps this stuff should go into startframe?
-    for(int i=0;i<4;i++){
-        vertex_r[i] = 1;
-        vertex_g[i] = 1;
-        vertex_b[i] = 1;
-        vertex_a[i] = 1;
-    }
 }
 
 void Engine::startFrame(){
@@ -177,8 +202,11 @@ void Engine::setup_opengl()
 
     //TODO: probably need to recreate textures here and do other context recreation stuff
 
-    if(Texture_Create("EngineMainTarget",width,height))
+    if(Texture_Create("EngineMainTarget",width,height)) {
         mainTarget = Texture_Get("EngineMainTarget");
+    } else {
+        throw "Could not create main target texture";
+    }
 }
 
 void Engine::System_SaveScreenshot(const std::string& filename){
@@ -322,27 +350,26 @@ bool Engine::System_SetRenderTarget(int tex_id){
         tex_id = mainTarget;
 
     //copy the current buffer to the previous render target
-    EngineTexture* tex = &textures[render_target];
-    glBindTexture( GL_TEXTURE_2D, tex->opengl_id );
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, tex->width, tex->height, 0);
-    tex->draw_flipped = true;
+    EngineTexture& target_tex = textures[render_target];
+    glBindTexture( GL_TEXTURE_2D, target_tex.opengl_id );
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, target_tex.width, target_tex.height, 0);
+    target_tex.draw_flipped = true;
 
     //set up the correct stuff for rendering to the new target
-    tex = &textures[tex_id];
+    EngineTexture& tex = textures[tex_id];
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0,0,tex->width,tex->height);
+    glViewport(0, 0, tex.width, tex.height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, tex->width, tex->height, 0, -2, 2);
+    glOrtho(0, tex.width, tex.height, 0, -2, 2);
     glMatrixMode(GL_MODELVIEW);
-
 
     //restore state?
     System_SetState_Blending(false);
     Texture_Set(tex_id);
     Quads_SetColor(1,1,1,1);
     Quads_Begin();
-    Quads_Draw(0,0,tex->width,tex->height);
+    Quads_Draw(0, 0, tex.width, tex.height);
     Quads_End();
 
     render_target = tex_id;
@@ -359,20 +386,27 @@ void Engine::System_ClearScreen(float r, float g, float b, float a){
 }
 
 void Engine::Texture_Set(int tex_slot){
+    assert(tex_slot >= 0);
+    assert(textures.size() > tex_slot);
+    assert(!textures[tex_slot].deleted);
     activetexture = tex_slot;
     glBindTexture( GL_TEXTURE_2D, textures[tex_slot].opengl_id );
 }
 
 
 void Engine::Texture_Delete(int tex_slot){
-    textures[tex_slot].deleted = true;
-    glDeleteTextures(1,&(textures[tex_slot].opengl_id));
-    freeSlotInList = true;
+    assert(tex_slot >= 0);
+    assert(textures.size() > tex_slot);
+    if (!textures[tex_slot].deleted) {
+        glDeleteTextures(1, &(textures[tex_slot].opengl_id));
+        textures[tex_slot].deleted = true;
+        freeSlotInList = true;
+    }
 }
 
 
 int Engine::Texture_Get(const std::string& id){
-    for(int i=0;i<maxtextures;i++){
+    for(int i=0;i<textures.size();i++){
         if(textures[i].name == id)
             return i;
     }
@@ -396,13 +430,14 @@ bool Engine::Texture_Create(const std::string& id, int width, int height){
 }
 
 
-bool Engine::Texture_Load(const std::string& id, char *filename){
+int Engine::Texture_Load(const std::string& id, char *filename){
     SDL_Surface *surface;
     GLenum texture_format;
 
     surface = IMG_Load(filename);
-    if(!surface)
-        return false;
+    if(!surface) {
+        return -1;
+    }
 
     Uint8 nOfColors = surface->format->BytesPerPixel;
     if (nOfColors == 4)     // contains an alpha channel
@@ -419,7 +454,7 @@ bool Engine::Texture_Load(const std::string& id, char *filename){
                     texture_format = GL_BGR;
     } else {
             //image in strange format
-            return false;
+            return -2;
     }
 
     createNewTexture(id,surface->w, surface->h);
@@ -428,7 +463,7 @@ bool Engine::Texture_Load(const std::string& id, char *filename){
                       texture_format, GL_UNSIGNED_BYTE, surface->pixels );
     // assuming the texture was copied to OpenGL, the surface is no longer needed
     SDL_FreeSurface(surface);
-    return true;
+    return 0;
 }
 
 int Engine::createNewTexture(const std::string& name, int width, int height){
@@ -445,7 +480,7 @@ int Engine::createNewTexture(const std::string& name, int width, int height){
     if(freeSlotInList) {
         bool found = false;
         int i = 0;
-        while(!found && i < currtexture){
+        while(!found && i < textures.size()){
             if(textures[i].deleted){
                 found = true;
                 newtext = i;
@@ -453,25 +488,19 @@ int Engine::createNewTexture(const std::string& name, int width, int height){
             i++;
         }
         if(!found){
-            newtext = currtexture;
-            currtexture++;
+            newtext = textures.size();
             freeSlotInList = false;
         }
     } else {
-        newtext = currtexture;
-        currtexture++;
+        newtext = textures.size();
     }
 
-    if(newtext >= maxtextures)
-        return -1;
-
-    textures[newtext].name = name;
-    textures[newtext].opengl_id = id;
-    textures[newtext].width = width;
-    textures[newtext].height = height;
-    textures[newtext].draw_flipped = false;
-    textures[newtext].deleted = false;
-
+    if(newtext < textures.size()) {
+        // replace entry
+        textures[newtext] = EngineTexture(name, id, width, height);
+    } else {
+        textures.emplace_back(name, id, width, height);
+    }
     return newtext;
 }
 

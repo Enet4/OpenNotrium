@@ -11,9 +11,7 @@
 //#include "DSUtil.h"
 #include "soundmanager.h"
 
-#define maximum_samples 200//how many samples can be loaded
-
-class resource_handler;
+static const unsigned int maximum_samples = 200; //how many samples can be loaded
 
 class resource_handler
 {
@@ -28,7 +26,7 @@ protected:
     //string texture_name[1000];
     //int textures;//how many textures to load
     Engine *grim;
-    char temprivi[1000];
+    //char temprivi[1000];
     int high_texture_count;
     int textures_count;
 
@@ -39,7 +37,6 @@ protected:
     std::string sample_name_mod[maximum_samples];
     bool play_sound;
     bool sound_initialized;
-
 
 public:
     int samples_loaded;

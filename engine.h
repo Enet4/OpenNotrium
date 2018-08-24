@@ -32,6 +32,10 @@ public:
     int width,height;
     bool draw_flipped; //needed to account for the difference in origin location
     bool deleted;
+
+    EngineTexture(const std::string& name, GLuint opengl_id, int width, int height, bool draw_flipped, bool deleted);
+    EngineTexture(const std::string& name, GLuint opengl_id, int width, int height, bool draw_flipped);
+    EngineTexture(const std::string& name, GLuint opengl_id, int width, int height);
 };
 
 class Engine
@@ -62,7 +66,7 @@ class Engine
     int activetexture;
 
     static const int maxtextures = 1000;
-    EngineTexture textures[maxtextures];
+    std::vector<EngineTexture> textures;
     bool freeSlotInList;
     int currtexture;
     int mainTarget; //texture for the screen rendertarget
@@ -164,7 +168,7 @@ public:
     * Loads a texture either from a "normal file" from work directory. False is returned if file wasn't found or it was wrong format or corrupted.
     * Supported image formats are PNG, BMP, JPG, a lot more (not TIFF though)
     */
-    bool Texture_Load(const std::string& id, char *filename);
+    int Texture_Load(const std::string& id, char *filename);
 
     /**
     * Sets quad rotation around its center, in radians
